@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Quotation Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .company-details {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .quotation-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 15px 0;
+            text-align: center;
+        }
+        .client-info {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .info-table td {
+            padding: 5px;
+            vertical-align: top;
+        }
+        .quotation-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .quotation-table th, .quotation-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .quotation-table th {
+            background-color: #f2f2f2;
+        }
+        .terms {
+            margin-top: 30px;
+        }
+        .terms h3 {
+            margin-bottom: 10px;
+        }
+        .terms ul {
+            margin-top: 5px;
+            padding-left: 20px;
+        }
+        .signature {
+            margin-top: 50px;
+            width: 100%;
+        }
+        .signature-line {
+            border-top: 1px solid #333;
+            width: 200px;
+            margin-top: 50px;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            text-align: center;
+        }
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 15px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .add-row {
+            background: #2196F3;
+        }
+        .add-row:hover {
+            background: #0b7dda;
+        }
+        .download-pdf {
+            background: #f44336;
+        }
+        .download-pdf:hover {
+            background: #da190b;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h2>Add New Work Item</h2>
+        <div>
+            <label>Description:</label><br>
+            <input type="text" id="workDesc" style="width: 100%;" placeholder="E.g.: Providing and fixing flooring of approved kota stone...">
+        </div>
+        <div style="display: flex; gap: 15px;">
+            <div>
+                <label>Quantity:</label><br>
+                <input type="number" id="workQty" placeholder="0">
+            </div>
+            <div>
+                <label>Unit:</label><br>
+                <select id="workUnit">
+                    <option value="sqm">sqm</option>
+                    <option value="sqft">sqft</option>
+                    <option value="nos">nos</option>
+                    <option value="rmt">rmt</option>
+                    <option value="day">day</option>
+                </select>
+            </div>
+            <div>
+                <label>Rate (₹):</label><br>
+                <input type="number" id="workRate" placeholder="0.00">
+            </div>
+        </div>
+        <button class="add-row" onclick="addWorkItem()">Add Item</button>
+        <button class="download-pdf" onclick="generatePDF()">Download PDF</button>
+    </div>
+
+    <div id="quotation-content">
+        <div class="header">
+            <div class="company-name"><input type="text" id="companyName" value="SADHU INTERIOR & CONSTRUCTION" style="border: none; text-align: center; font-size: 24px; font-weight: bold; width: 100%;"></div>
+            <div class="company-details">
+                <input type="text" id="companyAddress" value="Office: 91-45621406 | Phone: 8178883432, 9818788061" style="border: none; text-align: center; width: 100%;"><br>
+                <input type="text" id="companyGST" value="GSTIN : 07BZEPG2624NIZA | Email: sunilkumarshah774@gmail.com" style="border: none; text-align: center; width: 100%;">
+            </div>
+            <div class="quotation-title">QUOTATION</div>
+        </div>
+
+        <table class="info-table">
+            <tr>
+                <td width="50%">
+                    <strong>To:</strong><br>
+                    <input type="text" id="clientName" value="Asian Hospital" style="border: none; width: 100%;"><br>
+                    <input type="text" id="clientAddress" value="Sec-21 Faridabad, Harayana" style="border: none; width: 100%;">
+                </td>
+                <td width="50%" style="text-align: right;">
+                    <strong>Quotation No:</strong> <input type="text" id="quotationNo" value="2024-25/165" style="border: none; width: 150px;"><br>
+                    <strong>Date:</strong> <input type="date" id="quotationDate" style="border: none;"><br>
+                    <strong>Valid Until:</strong> <input type="date" id="validUntil" style="border: none;">
+                </td>
+            </tr>
+        </table>
+
+        <table class="quotation-table" id="workItems">
+            <thead>
+                <tr>
+                    <th width="5%">S.No.</th>
+                    <th width="45%">Description of Work</th>
+                    <th width="10%">Qty</th>
+                    <th width="10%">Unit</th>
+                    <th width="15%">Rate (₹)</th>
+                    <th width="15%">Amount (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Work items will be added here dynamically -->
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="5" style="text-align: right;"><strong>Subtotal:</strong></td>
+                    <td id="subtotal">0.00</td>
+                </tr>
+                <tr>
+                    <td colspan="5" style="text-align: right;"><strong>GST @18%:</strong></td>
+                    <td id="gstAmount">0.00</td>
+                </tr>
+                <tr>
+                    <td colspan="5" style="text-align: right;"><strong>Total Amount:</strong></td>
+                    <td id="totalAmount"><strong>0.00</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="terms">
+            <h3>Terms & Conditions:</h3>
+            <ul>
+                <li>GST @18% will be applicable extra as per government norms</li>
+                <li>Payment Terms: 50% advance, 40% during execution, 10% on completion</li>
+                <li>Validity: This quotation is valid for 30 days from the date of issue</li>
+                <li>Materials will be as per approved samples</li>
+                <li>Workmanship warranty: 12 months from date of completion</li>
+                <li>Client to provide: Electricity, water, and storage space at site</li>
+                <li>Any variations to be approved in writing with revised rates</li>
+                <li>Time for completion: 60 days from date of commencement</li>
+            </ul>
+        </div>
+
+        <div class="bank-details">
+            <h3>Bank Details:</h3>
+            <p>
+                <strong>Account Name:</strong> SADHU GRANITE POLISHING CONTRACTOR<br>
+                <strong>Bank Name:</strong> Canara Bank<br>
+                <strong>Account Number:</strong> 2591201000551<br>
+                <strong>IFSC Code:</strong> CNRB0002591<br>
+                <strong>Branch:</strong> New Delhi
+            </p>
+        </div>
+
+        <table class="signature">
+            <tr>
+                <td width="50%">
+                    <strong>Client Acceptance:</strong><br><br>
+                    <div class="signature-line"></div>
+                    <p>Authorized Signatory<br>Name: ________________<br>Date: ________________</p>
+                </td>
+                <td width="50%" style="text-align: right;">
+                    <strong>For <span id="signCompanyName">SADHU INTERIOR & CONSTRUCTION</span>:</strong><br><br>
+                    <div class="signature-line"></div>
+                    <p>Authorized Signatory<br>Name: ________________<br>Date: ________________</p>
+                </td>
+            </tr>
+        </table>
+
+        <div class="footer">
+            Thank you for your business! We look forward to working with you.
+        </div>
+    </div>
+
+    <script>
+        // Initialize today's date
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const validUntil = new Date();
+            validUntil.setDate(today.getDate() + 30);
+            
+            document.getElementById('quotationDate').valueAsDate = today;
+            document.getElementById('validUntil').valueAsDate = validUntil;
+        });
+
+        // Add work item to the table
+        function addWorkItem() {
+            const desc = document.getElementById('workDesc').value;
+            const qty = parseFloat(document.getElementById('workQty').value);
+            const unit = document.getElementById('workUnit').value;
+            const rate = parseFloat(document.getElementById('workRate').value);
+            
+            if (!desc || isNaN(qty) || isNaN(rate)) {
+                alert('Please fill all fields with valid values');
+                return;
+            }
+            
+            const amount = qty * rate;
+            const tbody = document.querySelector('#workItems tbody');
+            const rowCount = tbody.rows.length + 1;
+            
+            const row = tbody.insertRow();
+            row.innerHTML = `
+                <td>${rowCount}</td>
+                <td>${desc}</td>
+                <td>${qty}</td>
+                <td>${unit}</td>
+                <td>${rate.toFixed(2)}</td>
+                <td>${amount.toFixed(2)}</td>
+            `;
+            
+            // Clear input fields
+            document.getElementById('workDesc').value = '';
+            document.getElementById('workQty').value = '';
+            document.getElementById('workRate').value = '';
+            
+            // Update totals
+            updateTotals();
+        }
+
+        // Update subtotal, GST and total amounts
+        function updateTotals() {
+            const amounts = Array.from(document.querySelectorAll('#workItems tbody td:nth-child(6)'))
+                                .map(td => parseFloat(td.textContent));
+            
+            const subtotal = amounts.reduce((sum, amount) => sum + amount, 0);
+            const gst = subtotal * 0.18;
+            const total = subtotal + gst;
+            
+            document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+            document.getElementById('gstAmount').textContent = gst.toFixed(2);
+            document.getElementById('totalAmount').innerHTML = `<strong>${total.toFixed(2)}</strong>`;
+        }
+
+        // Generate PDF
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'pt', 'a4');
+            
+            // Hide controls before capturing
+            document.querySelector('.controls').style.display = 'none';
+            
+            // Capture the quotation content
+            html2canvas(document.getElementById('quotation-content'), {
+                scale: 2,
+                logging: false,
+                useCORS: true
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = doc.internal.pageSize.getWidth() - 20;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                doc.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+                doc.save(`Quotation_${document.getElementById('quotationNo').value}.pdf`);
+                
+                // Show controls again
+                document.querySelector('.controls').style.display = 'block';
+            });
+        }
+
+        // Update company name in signature when changed
+        document.getElementById('companyName').addEventListener('input', function() {
+            document.getElementById('signCompanyName').textContent = this.value;
+        });
+    </script>
+</body>
+</html>
